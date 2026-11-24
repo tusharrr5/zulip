@@ -19,6 +19,21 @@ export function resolve_name(topic_name: string): string {
     return RESOLVED_TOPIC_PREFIX + topic_name;
 }
 
+export function was_resolved(prev_topic: string, topic: string, max_topic_length: number): boolean {
+    if (is_resolved(prev_topic) || !is_resolved(topic)) {
+        return false;
+    }
+
+    // truncate_topic on the server measures Unicode code points.
+    const resolved = resolve_name(prev_topic);
+    const characters = Array.from(resolved);
+    if (characters.length <= max_topic_length) {
+        return topic === resolved;
+    }
+    const suffix = "...";
+    return topic === characters.slice(0, max_topic_length - suffix.length).join("") + suffix;
+}
+
 /**
  * The un-resolved form of this topic name.
  *

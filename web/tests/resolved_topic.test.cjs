@@ -35,6 +35,22 @@ run_test("unresolve_name", () => {
     assert.equal(resolved_topic.unresolve_name(pseudoresolved_name), pseudoresolved_name);
 });
 
+run_test("was_resolved", () => {
+    assert.ok(resolved_topic.was_resolved("topic", "✔ topic", 60));
+    assert.ok(!resolved_topic.was_resolved("topic", "✔ renamed", 60));
+    assert.ok(!resolved_topic.was_resolved("✔ topic", "✔ topic", 60));
+    assert.ok(!resolved_topic.was_resolved("topic", "topic", 60));
+
+    const limit = 60;
+    const fitting = "😀".repeat(58);
+    assert.ok(resolved_topic.was_resolved(fitting, "✔ " + fitting, limit));
+
+    const long = "😀".repeat(60);
+    const truncated = "✔ " + "😀".repeat(55) + "...";
+    assert.ok(resolved_topic.was_resolved(long, truncated, limit));
+    assert.ok(!resolved_topic.was_resolved(long, "✔ 😀...", limit));
+});
+
 run_test("display_parts", () => {
     const results = [];
     for (const name of names) {

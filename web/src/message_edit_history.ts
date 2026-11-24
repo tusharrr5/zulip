@@ -17,7 +17,7 @@ import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
-import {is_resolved, unresolve_name} from "./resolved_topic.ts";
+import {is_resolved, unresolve_name, was_resolved} from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import * as spectators from "./spectators.ts";
@@ -177,22 +177,16 @@ function build_topic_move_entry(
     let edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
     assert(server_entry.prev_topic !== undefined);
     let topic_resolved_or_unresolved: "resolved" | "unresolved" | "none" = "none";
-    const prev_topic_resolved = is_resolved(server_entry.prev_topic);
-    const current_topic_resolved = is_resolved(server_entry.topic);
-    // Only treat this as a resolve/unresolve toggle when the base topic name
-    // (stripped of the resolved prefix) is unchanged; otherwise it's a rename
-    // that also happened to add/remove the prefix.
-    if (
-        prev_topic_resolved !== current_topic_resolved &&
-        unresolve_name(server_entry.prev_topic) === unresolve_name(server_entry.topic)
+    if (was_resolved(server_entry.prev_topic, server_entry.topic, realm.max_topic_length)) {
+        topic_resolved_or_unresolved = "resolved";
+        edited_by_notice = $t({defaultMessage: "Topic resolved by {full_name}"}, {full_name});
+    } else if (
+        is_resolved(server_entry.prev_topic) &&
+        !is_resolved(server_entry.topic) &&
+        unresolve_name(server_entry.prev_topic) === server_entry.topic
     ) {
-        if (current_topic_resolved) {
-            topic_resolved_or_unresolved = "resolved";
-            edited_by_notice = $t({defaultMessage: "Topic resolved by {full_name}"}, {full_name});
-        } else {
-            topic_resolved_or_unresolved = "unresolved";
-            edited_by_notice = $t({defaultMessage: "Topic unresolved by {full_name}"}, {full_name});
-        }
+        topic_resolved_or_unresolved = "unresolved";
+        edited_by_notice = $t({defaultMessage: "Topic unresolved by {full_name}"}, {full_name});
     }
     return {
         edited_by_notice,
