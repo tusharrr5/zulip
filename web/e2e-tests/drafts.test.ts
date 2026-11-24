@@ -236,6 +236,19 @@ async function test_delete_draft(page: Page): Promise<void> {
     await page.click("body");
 }
 
+async function test_delete_draft_with_keyboard(page: Page): Promise<void> {
+    await create_stream_message_draft(page);
+    await page.click(drafts_button);
+    await wait_for_drafts_to_appear(page);
+    await page.focus("#drafts_table .draft-message-info-box");
+    await page.keyboard.press("Tab");
+    await page.waitForSelector("#drafts_table .copy-overlay-message:focus");
+    await page.keyboard.press("Backspace");
+    await page.waitForSelector("#drafts_table .draft-message-row", {hidden: true});
+    await page.click(`${drafts_overlay} .exit`);
+    await wait_for_drafts_to_disappear(page);
+}
+
 async function test_save_draft_by_reloading(page: Page): Promise<void> {
     console.log("Saving draft by reloading.");
     await page.keyboard.press("KeyX");
@@ -298,6 +311,7 @@ async function drafts_test(page: Page): Promise<void> {
     );
 
     await test_empty_drafts(page);
+    await test_delete_draft_with_keyboard(page);
 
     await create_stream_message_draft(page);
     await test_restore_stream_message_draft_by_opening_compose_box(page);

@@ -28,7 +28,7 @@ export type Context = {
 };
 
 export function row_with_focus(context: Context): JQuery {
-    const $focused_item = $(`.${CSS.escape(context.box_item_selector)}:focus`);
+    const $focused_item = $(`.${CSS.escape(context.box_item_selector)}:focus-within`);
     return $focused_item.parent(`.${CSS.escape(context.row_item_selector)}`);
 }
 
@@ -179,7 +179,7 @@ function initialize_focus(event_name: string, context: Context): void {
     // if up_arrow is clicked or the first item if down_arrow is clicked.
     if (
         (event_name !== "up_arrow" && event_name !== "down_arrow") ||
-        $(`.${CSS.escape(context.box_item_selector)}:focus`).length > 0
+        row_with_focus(context).length > 0
     ) {
         return;
     }
